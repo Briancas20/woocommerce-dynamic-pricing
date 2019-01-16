@@ -332,6 +332,8 @@ class WC_Dynamic_Pricing_Advanced_Taxonomy extends WC_Dynamic_Pricing_Advanced_B
 
 	protected function get_bulk_adjusted_price( $cart_item, $price, $rule, $q ) {
 		$result       = false;
+
+		$amount       = apply_filters( 'woocommerce_dynamic_pricing_get_rule_amount', $rule['amount'], $rule, $cart_item, $this );
 		$num_decimals = apply_filters( 'woocommerce_dynamic_pricing_get_decimals', (int) get_option( 'woocommerce_price_num_decimals' ) );
 
 
@@ -359,9 +361,12 @@ class WC_Dynamic_Pricing_Advanced_Taxonomy extends WC_Dynamic_Pricing_Advanced_B
 					break;
 				case 'fixed_price':
 					if ( isset( $cart_item['_gform_total'] ) ) {
-						$amount = floatval( $rule['amount'] ) + floatval( $cart_item['_gform_total'] );
-					} else {
-						$amount = floatval( $rule['amount'] );
+						$amount += floatval( $cart_item['_gform_total'] );
+					}
+
+					if ( isset( $cart_item['addons_price_before_calc'] ) ) {
+						$addons_total = $price - $cart_item['addons_price_before_calc'];
+						$amount += $addons_total;
 					}
 
 					$result = round( $amount, (int) $num_decimals );

@@ -23,7 +23,7 @@ class woocommerce_membership_pricing_rules_admin {
                     <thead>
                     <th><?php _e( 'Enabled', 'woocommerce-dynamic-pricing' ); ?></th>
                     <th>
-						<?php _e( 'Role', 'woocommerce-dynamic-pricing' ); ?>Role
+						<?php _e( 'Role', 'woocommerce-dynamic-pricing' ); ?>
                     </th>
                     <th>
 						<?php _e( 'Type', 'woocommerce-dynamic-pricing' ); ?>

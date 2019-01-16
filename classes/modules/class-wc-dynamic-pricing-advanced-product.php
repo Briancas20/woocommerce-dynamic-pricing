@@ -43,6 +43,10 @@ class WC_Dynamic_Pricing_Advanced_Product extends WC_Dynamic_Pricing_Advanced_Ba
 
 				foreach ( $product_adjustment_sets as $set_id => $set ) {
 
+					if ( $this->is_item_discounted( $cart_item, $cart_item_key, $set_id ) ) {
+						continue;
+					}
+
 					if ( $set->target_variations && isset( $cart_item['variation_id'] ) && ! in_array( $cart_item['variation_id'], $set->target_variations ) ) {
 						continue;
 					}
@@ -65,7 +69,9 @@ class WC_Dynamic_Pricing_Advanced_Product extends WC_Dynamic_Pricing_Advanced_Ba
 
 						if ( $price_adjusted !== false && floatval( $original_price ) != floatval( $price_adjusted ) ) {
 							WC_Dynamic_Pricing::apply_cart_item_adjustment( $cart_item_key, $original_price, $price_adjusted, 'advanced_product', $set_id );
+							//if (!apply_filters( 'woocommerce_dynamic_pricing_is_cumulative', false, $this->module_id, $cart_item, $cart_item_key )) {
 							break;
+							//}
 						}
 					}
 				}
@@ -132,6 +138,11 @@ class WC_Dynamic_Pricing_Advanced_Product extends WC_Dynamic_Pricing_Advanced_Ba
 
 							if ( isset( $cart_item['_gform_total'] ) ) {
 								$amount += floatval( $cart_item['_gform_total'] );
+							}
+
+							if ( isset( $cart_item['addons_price_before_calc'] ) ) {
+								$addons_total = $price - $cart_item['addons_price_before_calc'];
+								$amount += $addons_total;
 							}
 
 							$result = round( $amount, (int) $num_decimals );
@@ -302,7 +313,7 @@ class WC_Dynamic_Pricing_Advanced_Product extends WC_Dynamic_Pricing_Advanced_Ba
 						case 'product':
 
 							$f = $rule['from'];
-							$a = min($rule['adjust'], max(0, $q - $f));
+							$a = min( $rule['adjust'], max( 0, $q - $f ) );
 
 							if ( isset( $this->used_rules[ $rule_set_id ] ) ) {
 								$a = $a - $this->used_rules[ $rule_set_id ];
@@ -419,7 +430,7 @@ class WC_Dynamic_Pricing_Advanced_Product extends WC_Dynamic_Pricing_Advanced_Ba
 				break;
 		}
 
-		return apply_filters('woocommerce_dynamic_pricing_get_quantity_for_cart_item', $quantity, $cart_item, $collector, $set);
+		return apply_filters( 'woocommerce_dynamic_pricing_get_quantity_for_cart_item', $quantity, $cart_item, $collector, $set );
 	}
 
 }

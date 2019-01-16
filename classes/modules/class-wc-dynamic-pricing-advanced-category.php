@@ -217,8 +217,8 @@ class WC_Dynamic_Pricing_Advanced_Category extends WC_Dynamic_Pricing_Advanced_B
 	 *
 	 * Gets the bulk adjusted price for an item based on the cart item and rules which would apply to it.
 	 *
-	 * @param $cart_item The woocommerce cart item.
-	 * @param $cart_item_key The woocommerce cart item key.
+	 * @param      $cart_item               The woocommerce cart item.
+	 * @param      $cart_item_key           The woocommerce cart item key.
 	 * @param bool $original_price_override An optional price to be sent to the adjustment calculation functions.
 	 *
 	 * @return array|bool
@@ -251,14 +251,14 @@ class WC_Dynamic_Pricing_Advanced_Category extends WC_Dynamic_Pricing_Advanced_B
 	 *
 	 * @see WC_Dynamic_Pricing_Advanced_Category::get_valid_adjustment_sets_for_cart_item();
 	 *
-	 * @param $adjustment_set WC_Dynamic_Pricing_Adjustment_Set_Category
-	 * @param $cart_item array
-	 * @param $cart_item_key string
+	 * @param      $adjustment_set          WC_Dynamic_Pricing_Adjustment_Set_Category
+	 * @param      $cart_item               array
+	 * @param      $cart_item_key           string
 	 * @param bool $original_price_override bool|float Optional price to pass to the adjustment calculation functions.
 	 *
 	 * @return array|bool
 	 */
-	public function                                                                                             get_bulk_cart_item_adjusted_price_by_adjustment_set( $adjustment_set, $cart_item, $cart_item_key, $original_price_override = false ) {
+	public function get_bulk_cart_item_adjusted_price_by_adjustment_set( $adjustment_set, $cart_item, $cart_item_key, $original_price_override = false ) {
 		if ( ! $adjustment_set->is_valid_for_user() ) {
 			return false;
 		}
@@ -395,9 +395,12 @@ class WC_Dynamic_Pricing_Advanced_Category extends WC_Dynamic_Pricing_Advanced_B
 					break;
 				case 'fixed_price':
 					if ( isset( $cart_item['_gform_total'] ) ) {
-						$amount = floatval( $amount ) + floatval( $cart_item['_gform_total'] );
-					} else {
-						$amount = floatval( $amount );
+						$amount += floatval( $cart_item['_gform_total'] );
+					}
+
+					if ( isset( $cart_item['addons_price_before_calc'] ) ) {
+						$addons_total = $price - $cart_item['addons_price_before_calc'];
+						$amount += $addons_total;
 					}
 
 					$result = round( $amount, (int) $num_decimals );
@@ -468,7 +471,7 @@ class WC_Dynamic_Pricing_Advanced_Category extends WC_Dynamic_Pricing_Advanced_B
 	 * Gets the valid Adjustment Sets which should be processed.  Checks for the cumulative and already discounted flags on the cart item.
 	 * Also makes sure the item is in the correct terms for the adjustment set to apply.
 	 *
-	 * @param $cart_item The woocommerce cart item
+	 * @param $cart_item     The woocommerce cart item
 	 * @param $cart_item_key The woocommerce cart item key
 	 *
 	 *
@@ -492,7 +495,9 @@ class WC_Dynamic_Pricing_Advanced_Category extends WC_Dynamic_Pricing_Advanced_B
 					$sets[ $adjustment_set->set_id ] = $adjustment_set;
 				}
 			} else {
-				$sets[ $adjustment_set->set_id ] = $adjustment_set;
+				if ( ! $this->is_item_discounted( $cart_item, $cart_item_key, $adjustment_set->set_id  ) ) {
+					$sets[ $adjustment_set->set_id ] = $adjustment_set;
+				}
 			}
 		}
 

@@ -5,18 +5,18 @@
  * Woo: 18643:9a41775bb33843f52c93c922b0053986
  * Plugin URI: https://woocommerce.com/products/dynamic-pricing/
  * Description: WooCommerce Dynamic Pricing lets you configure dynamic pricing rules for products, categories and members.
- * Version: 3.1.10
+ * Version: 3.1.13
  * Author: Lucas Stark
  * Author URI: https://elementstark.com
  * Requires at least: 3.3
- * Tested up to: 4.9.8
+ * Tested up to: 5.0.2
  * Text Domain: woocommerce-dynamic-pricing
  * Domain Path: /i18n/languages/
- * Copyright: © 2009-2018 Lucas Stark.
+ * Copyright: © 2009-2019 Lucas Stark.
  * License: GNU General Public License v3.0
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  * WC requires at least: 3.0.0
- * WC tested up to: 3.4.6
+ * WC tested up to: 3.5.3
  */
 
 
@@ -257,6 +257,7 @@ class WC_Dynamic_Pricing {
 
 	/**
 	 * Add the price filters back in after mini-cart is done.
+	 *
 	 * @since 2.10.2
 	 */
 	public function add_price_filters() {
@@ -279,6 +280,7 @@ class WC_Dynamic_Pricing {
 
 	/**
 	 * Remove the price filter when mini-cart is triggered.
+	 *
 	 * @since 2.10.2
 	 */
 	public function remove_price_filters() {
@@ -354,7 +356,7 @@ class WC_Dynamic_Pricing {
 	}
 
 	/**
-	 * @param bool $valid
+	 * @param bool      $valid
 	 * @param WC_Coupon $coupon
 	 *
 	 * @return bool
@@ -496,7 +498,7 @@ class WC_Dynamic_Pricing {
 	/**
 	 * @since 2.6.1
 	 *
-	 * @param type $base_price
+	 * @param type       $base_price
 	 * @param WC_Product $_product
 	 *
 	 * @return float
@@ -535,6 +537,10 @@ class WC_Dynamic_Pricing {
 					return $base_price;
 				}
 
+				//Make sure not to override the deposit amount.  It's already been configured when the cart was loaded from session.
+				if (isset($cart_item['is_deposit'])) {
+					return $base_price;
+				}
 
 				$this->remove_price_filters();
 
@@ -616,7 +622,7 @@ class WC_Dynamic_Pricing {
 	/**
 	 * @since 2.9.8
 	 *
-	 * @param type $base_price
+	 * @param type       $base_price
 	 * @param WC_Product $_product
 	 *
 	 * @return float
@@ -654,9 +660,10 @@ class WC_Dynamic_Pricing {
 
 	/**
 	 * Filters the variation price from WC_Product_Variable->get_variation_prices()
+	 *
 	 * @since 2.11.1
 	 *
-	 * @param float $price
+	 * @param float                $price
 	 * @param WC_Product_Variation $variation
 	 *
 	 * @return float
@@ -666,10 +673,10 @@ class WC_Dynamic_Pricing {
 	}
 
 	/**
-	 * @param float $price
+	 * @param float      $price
 	 * @param WC_Product $product
-	 * @param string $min_or_max
-	 * @param string $display
+	 * @param string     $min_or_max
+	 * @param string     $display
 	 *
 	 * @return float|mixed|string
 	 */
@@ -725,9 +732,10 @@ class WC_Dynamic_Pricing {
 
 	/**
 	 * Overrides the default woocommerce is on sale to ensure sale badges show properly.
+	 *
 	 * @since 2.10.8
 	 *
-	 * @param bool $is_on_sale
+	 * @param bool       $is_on_sale
 	 * @param WC_Product $product
 	 *
 	 * @return bool
@@ -833,19 +841,20 @@ class WC_Dynamic_Pricing {
 					'set_id'         => $set_id,
 					'price_base'     => $original_price,
 					'display_price'  => $existing['display_price'],
-					'price_adjusted' => $adjusted_price
+					'price_adjusted' => $adjusted_price,
+					'applied_discounts' => $existing['applied_discounts']
 				);
 
 				WC()->cart->cart_contents[ $cart_item_key ]['discounts'] = $discount_data;
 
-				$history = array(
-					'by'             => $existing['by'],
-					'set_id'         => $existing['set_id'],
-					'price_base'     => $existing['price_base'],
-					'price_adjusted' => $existing['price_adjusted']
-				);
+
 				array_push( WC()->cart->cart_contents[ $cart_item_key ]['discounts']['by'], $module );
-				WC()->cart->cart_contents[ $cart_item_key ]['discounts']['applied_discounts'][] = $history;
+				WC()->cart->cart_contents[ $cart_item_key ]['discounts']['applied_discounts'][] = array(
+					'by'             => $module,
+					'set_id'         => $set_id,
+					'price_base'     => $original_price,
+					'price_adjusted' => $adjusted_price
+				);
 			}
 		}
 		do_action( 'wc_memberships_discounts_enable_price_adjustments' );
@@ -879,6 +888,47 @@ class WC_Dynamic_Pricing {
 }
 
 /* Helper Functions */
+
+function wc_dynamic_pricing_is_within_date_range( $from = '', $to = '' ) {
+	// Check date range
+	$from_date = empty( $from ) ? false : wc_dynamic_pricing_wp_strtotime( $from . ' ' . '00:00:00' );
+	$to_date   = empty( $to ) ? false : wc_dynamic_pricing_wp_strtotime( $to . ' ' . '23:59:00' );
+	$now       = current_time( 'timestamp' );
+
+	$execute_rules = true;
+	if ( $from_date && $to_date && ! ( $now >= $from_date && $now <= $to_date ) ) {
+		$execute_rules = false;
+	} elseif ( $from_date && ! $to_date && ! ( $now >= $from_date ) ) {
+		$execute_rules = false;
+	} elseif ( $to_date && ! $from_date && ! ( $now <= $to_date ) ) {
+		$execute_rules = false;
+	}
+
+	return $execute_rules;
+}
+
+function wc_dynamic_pricing_wp_strtotime( $str ) {
+	// This function behaves a bit like PHP's StrToTime() function, but taking into account the Wordpress site's timezone
+	// CAUTION: It will throw an exception when it receives invalid input - please catch it accordingly
+	// From https://mediarealm.com.au/
+	$tz_string = get_option( 'timezone_string' );
+	$tz_offset = get_option( 'gmt_offset', 0 );
+	if ( ! empty( $tz_string ) ) {
+		// If site timezone option string exists, use it
+		$timezone = $tz_string;
+	} elseif ( $tz_offset == 0 ) {
+		// get UTC offset, if it isn’t set then return UTC
+		$timezone = 'UTC';
+	} else {
+		$timezone = $tz_offset;
+		if ( substr( $tz_offset, 0, 1 ) != "-" && substr( $tz_offset, 0, 1 ) != "+" && substr( $tz_offset, 0, 1 ) != "U" ) {
+			$timezone = "+" . $tz_offset;
+		}
+	}
+	$datetime = new DateTime( $str, new DateTimeZone( $timezone ) );
+
+	return $datetime->format( 'U' );
+}
 
 function wc_dynamic_pricing_is_groups_active() {
 	$result = false;
