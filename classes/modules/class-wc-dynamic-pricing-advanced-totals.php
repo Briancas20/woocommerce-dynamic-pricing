@@ -69,13 +69,9 @@ class WC_Dynamic_Pricing_Advanced_Totals extends WC_Dynamic_Pricing_Advanced_Bas
 								}
 
 								if ( ! $this->is_cumulative( $cart_item, $cart_item_key ) ) {
-
-
 									if ( $this->is_item_discounted( $cart_item, $cart_item_key ) && apply_filters( 'wc_dynamic_pricing_stack_order_totals', false ) === false ) {
 										continue;
 									}
-
-
 								}
 
 								$discounted = isset( WC()->cart->cart_contents[ $cart_item_key ]['discounts'] );
@@ -107,7 +103,12 @@ class WC_Dynamic_Pricing_Advanced_Totals extends WC_Dynamic_Pricing_Advanced_Bas
 				}
 			}
 		}
+
+		add_filter('wc_dynamic_pricing_stack_order_totals', '__return_true');
+
 	}
+
+
 
 	private function is_applied_to_product( $product, $targets ) {
 		if ( is_admin() && !is_ajax() ) {

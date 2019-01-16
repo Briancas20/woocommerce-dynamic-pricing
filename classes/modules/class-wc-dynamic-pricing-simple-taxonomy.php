@@ -75,19 +75,8 @@ class WC_Dynamic_Pricing_Simple_Taxonomy extends WC_Dynamic_Pricing_Simple_Base 
 					$execute_rules = true;
 				}
 
-				if ( isset( $pricing_rule_set['date_from'] ) && isset( $pricing_rule_set['date_to'] ) ) {
-					// Check date range
-					$from_date = empty( $this->set_data['date_from'] ) ? false : strtotime( date_i18n( 'Y-m-d 00:00:00', strtotime( $this->set_data['date_from'] ), false ) );
-					$to_date   = empty( $this->set_data['date_to'] ) ? false : strtotime( date_i18n( 'Y-m-d 00:00:00', strtotime( $this->set_data['date_to'] ), false ) );
-					$now       = current_time( 'timestamp' );
-
-					if ( $from_date && $to_date && ! ( $now >= $from_date && $now <= $to_date ) ) {
-						$execute_rules = false;
-					} elseif ( $from_date && ! $to_date && ! ( $now >= $from_date ) ) {
-						$execute_rules = false;
-					} elseif ( $to_date && ! $from_date && ! ( $now <= $to_date ) ) {
-						$execute_rules = false;
-					}
+				if ( $execute_rules && ( isset( $pricing_rule_set['date_from'] ) || isset( $pricing_rule_set['date_to'] ) )  ) {
+					$execute_rules = wc_dynamic_pricing_is_within_date_range( $pricing_rule_set['date_from'], $pricing_rule_set['date_to'] );
 				}
 
 				if ( $execute_rules && isset( $pricing_rule_set['collector']['args']['cats'][0] ) ) {
