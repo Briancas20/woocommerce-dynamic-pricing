@@ -1,4 +1,16 @@
 *** Dynamic Pricing Changelog ***
+2019.01.07 - version 3.1.13
+    * Fix:  Fix issue where rules were being loaded for roles other than the logged on users role.
+
+2019.01.03 - version 3.1.12
+    * Fix:  Fix issue where discounted prices were being shown when in an invalid state.
+2019.01.02 - version 3.1.11
+    * Update:  Fix date ranges so they are localized to the WordPress time.
+    * Update:  Update date range calculation to be inclusive.  Sales start at 00:00:01 and end at 23:59:59 on the selected dates.
+    * Update:  Modify some labels to maintain consistency.
+    * Update:  If cart item has deposits set, return the price being requested so deposit prices are not filtered twice.
+    * Update:  Add WooCommerce Product Options totals back onto products with Fixed Price adjustments.
+
 2018.10.23 - version 3.1.10
     * Update:  Check for null cart items in sorting function.  Should never happen unless a plugin or theme is incorrectly loading the cart.
     * Update:  Tested to WC 3.5
