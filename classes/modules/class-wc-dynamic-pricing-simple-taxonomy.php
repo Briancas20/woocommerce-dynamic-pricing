@@ -75,7 +75,7 @@ class WC_Dynamic_Pricing_Simple_Taxonomy extends WC_Dynamic_Pricing_Simple_Base 
 					$execute_rules = true;
 				}
 
-				if ( $execute_rules && ( isset( $pricing_rule_set['date_from'] ) || isset( $pricing_rule_set['date_to'] ) )  ) {
+				if ( $execute_rules && ( isset( $pricing_rule_set['date_from'] ) || isset( $pricing_rule_set['date_to'] ) ) ) {
 					$execute_rules = wc_dynamic_pricing_is_within_date_range( $pricing_rule_set['date_from'], $pricing_rule_set['date_to'] );
 				}
 
@@ -136,7 +136,7 @@ class WC_Dynamic_Pricing_Simple_Taxonomy extends WC_Dynamic_Pricing_Simple_Base 
 	}
 
 	public function is_applied_to_product( $p, $cat_id = false ) {
-		if ( is_admin() && !is_ajax() && apply_filters( 'woocommerce_dynamic_pricing_skip_admin', true ) ) {
+		if ( is_admin() && ! is_ajax() && apply_filters( 'woocommerce_dynamic_pricing_skip_admin', true ) ) {
 			return false;
 		}
 
@@ -171,8 +171,11 @@ class WC_Dynamic_Pricing_Simple_Taxonomy extends WC_Dynamic_Pricing_Simple_Base 
 			case 'percentage_discount':
 			case 'percent_product':
 				$amount = $amount / 100;
-
-				$result = round( floatval( $price ) - ( floatval( $amount ) * $price ), (int) $num_decimals );
+				if ( $amount <= 1 ) {
+					$result = round( floatval( $price ) - ( floatval( $amount ) * $price ), (int) $num_decimals );
+				} else {
+					$result = round( ( floatval( $amount ) * $price ), (int) $num_decimals );
+				}
 				break;
 			case 'fixed_price':
 				$result = round( $amount, (int) $num_decimals );

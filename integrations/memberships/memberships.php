@@ -27,20 +27,15 @@ function wc_dynamic_pricing_membership_applies_to_selector( $module_name, $condi
 	?>
 
     <div class="membership" style="<?php echo $div_style; ?>">
-		<?php $chunks = array_chunk( $all_plans, ceil( count( $all_plans ) / 3 ), true ); ?>
-		<?php foreach ( $chunks as $chunk ) : ?>
-            <ul class="list-column">
-				<?php foreach ( $chunk as $plan ) : ?>
-					<?php $plan_id = $plan->get_id() ?>
-					<?php $checked = ( isset( $condition['args']['memberships'] ) && is_array( $condition['args']['memberships'] ) && in_array( $plan_id, $condition['args']['memberships'] ) ) ? 'checked="checked"' : ''; ?>
-                    <li>
-                        <label for="<?php echo $name; ?>_membership_<?php echo $plan_id; ?>" class="selectit">
-                            <input <?php echo $checked; ?> type="checkbox" id="<?php echo $name; ?>_membership_<?php echo $plan_id; ?>" name="pricing_rules[<?php echo $name; ?>][conditions][<?php echo $condition_index; ?>][args][memberships][]" value="<?php echo $plan_id; ?>"/><?php echo $plan->get_name(); ?>
-                        </label>
-                    </li>
-				<?php endforeach; ?>
-            </ul>
-		<?php endforeach; ?>
+        <label for="pricing_rule_apply_to_<?php echo $name . '_' . $condition_index; ?>_memberships"><?php _e('Membership Plans:', 'woocommerce-dynamic-pricing'); ?></label>
+
+        <select style="width: 90%;" name="pricing_rules[<?php echo $name; ?>][conditions][<?php echo $condition_index; ?>][args][memberships][]" id="pricing_rule_apply_to_<?php echo $name . '_' . $condition_index; ?>_memberships" class="multiselect wc-enhanced-select" multiple="multiple">
+		    <?php foreach($all_plans as  $plan): ?>
+			    <?php $plan_id = $plan->get_id() ?>
+			    <?php $checked = (isset( $condition['args']['memberships'] ) && is_array( $condition['args']['memberships'] ) && in_array( $plan_id, $condition['args']['memberships'] )) ? true : false; ?>
+                <option <?php selected($checked); ?> value="<?php esc_attr_e($plan_id); ?>"><?php esc_html_e( $plan->get_name()); ?></option>
+		    <?php endforeach; ?>
+        </select>
     </div>
 
 	<?php

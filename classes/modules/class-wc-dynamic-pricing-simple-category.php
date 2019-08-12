@@ -68,7 +68,7 @@ class WC_Dynamic_Pricing_Simple_Category extends WC_Dynamic_Pricing_Simple_Base 
 					$execute_rules = true;
 				}
 
-				if ( $execute_rules && ( isset( $pricing_rule_set['date_from'] ) || isset( $pricing_rule_set['date_to'] ) )  ) {
+				if ( $execute_rules && ( isset( $pricing_rule_set['date_from'] ) || isset( $pricing_rule_set['date_to'] ) ) ) {
 					$execute_rules = wc_dynamic_pricing_is_within_date_range( $pricing_rule_set['date_from'], $pricing_rule_set['date_to'] );
 				}
 
@@ -106,7 +106,7 @@ class WC_Dynamic_Pricing_Simple_Category extends WC_Dynamic_Pricing_Simple_Base 
 
 				foreach ( $this->available_rulesets as $set_id => $pricing_rule_set ) {
 
-					if ( !$this->is_cumulative( $cart_item, $cart_item_key ) ) {
+					if ( ! $this->is_cumulative( $cart_item, $cart_item_key ) ) {
 						if ( $this->is_item_discounted( $cart_item, $cart_item_key, $set_id ) ) {
 							continue;
 						}
@@ -115,7 +115,7 @@ class WC_Dynamic_Pricing_Simple_Category extends WC_Dynamic_Pricing_Simple_Base 
 					if ( $this->is_applied_to_product( $_product, $pricing_rule_set['collector']['args']['cats'][0] ) ) {
 						$rule = $pricing_rule_set['rules'][0];
 
-						$temp = $this->get_adjusted_price($cart_item, $rule, $original_price );
+						$temp = $this->get_adjusted_price( $cart_item, $rule, $original_price );
 
 						if ( ! $price_adjusted || $temp < $price_adjusted ) {
 							$price_adjusted      = $temp;
@@ -154,7 +154,7 @@ class WC_Dynamic_Pricing_Simple_Category extends WC_Dynamic_Pricing_Simple_Base 
 		return apply_filters( 'woocommerce_dynamic_pricing_is_applied_to', $process_discounts, $_product, $this->module_id, $this, $cat_id );
 	}
 
-	private function get_adjusted_price($cart_item, $rule, $price ) {
+	private function get_adjusted_price( $cart_item, $rule, $price ) {
 		$result = false;
 
 		$amount       = apply_filters( 'woocommerce_dynamic_pricing_get_rule_amount', $rule['amount'], $rule, null, $this );
@@ -169,8 +169,12 @@ class WC_Dynamic_Pricing_Simple_Category extends WC_Dynamic_Pricing_Simple_Base 
 			case 'percentage_discount':
 			case 'percent_product':
 				$amount = $amount / 100;
+				if ( $amount <= 1 ) {
+					$result = round( floatval( $price ) - ( floatval( $amount ) * $price ), (int) $num_decimals );
+				} else {
+					$result = round( ( floatval( $amount ) * $price ), (int) $num_decimals );
+				}
 
-				$result = round( floatval( $price ) - ( floatval( $amount ) * $price ), (int) $num_decimals );
 				break;
 			case 'fixed_price':
 				if ( isset( $cart_item['_gform_total'] ) ) {
@@ -179,7 +183,7 @@ class WC_Dynamic_Pricing_Simple_Category extends WC_Dynamic_Pricing_Simple_Base 
 
 				if ( isset( $cart_item['addons_price_before_calc'] ) ) {
 					$addons_total = $price - $cart_item['addons_price_before_calc'];
-					$amount += $addons_total;
+					$amount       += $addons_total;
 				}
 
 				$result = round( $amount, (int) $num_decimals );
@@ -241,7 +245,7 @@ class WC_Dynamic_Pricing_Simple_Category extends WC_Dynamic_Pricing_Simple_Base 
 	}
 
 	public function get_discounted_price_for_shop( $_product, $working_price ) {
-		$fake_cart_item  = array( 'data' => $_product );
+		$fake_cart_item   = array( 'data' => $_product );
 		$price_adjusted   = false;
 		$applied_rule     = false;
 		$applied_rule_set = false;
@@ -258,12 +262,12 @@ class WC_Dynamic_Pricing_Simple_Category extends WC_Dynamic_Pricing_Simple_Base 
 						if ( $this->is_applied_to_product( $_product, $cats_to_check ) ) {
 							$rule = array_shift( $pricing_rule_set['rules'] );
 
-							if ( ! isset( $rule['from'] ) ) {
+							if ( ! isset( $rule['from'] ) || empty( $rule['from'] ) ) {
 								$rule['from'] = 0;
 							}
 
-							if ( $rule['from'] == '0' ) {
-								$temp = $this->get_adjusted_price($fake_cart_item, $rule, $working_price );
+							if ( $rule['from'] == '0' || $rule['from'] == '1' ) {
+								$temp = $this->get_adjusted_price( $fake_cart_item, $rule, $working_price );
 
 								if ( ! $price_adjusted || $temp < $price_adjusted ) {
 									$price_adjusted = $temp;

@@ -8,6 +8,7 @@ class WC_Dynamic_Pricing_Counter {
 	public $category_counts = array();
 	private $categories_in_cart = array();
 	private $taxonomies_in_cart = array();
+	private $tracked_cart_items = array();
 
 	/**
 	 * @var WC_Dynamic_Pricing_Counter
@@ -53,6 +54,7 @@ class WC_Dynamic_Pricing_Counter {
 		$this->variation_counts   = array();
 		$this->category_counts    = array();
 		$this->categories_in_cart = array();
+		$this->tracked_cart_items = array();
 	}
 
 	public function reset_counter( $cart ) {
@@ -63,9 +65,17 @@ class WC_Dynamic_Pricing_Counter {
 		$this->categories_in_cart = array();
 		$this->taxonomies_in_cart = array();
 		$this->taxonomy_counts    = array();
+		$this->tracked_cart_items = array();
 
 		if ( sizeof( $cart->cart_contents ) > 0 ) {
 			foreach ( $cart->cart_contents as $cart_item_key => $values ) {
+
+				if ( isset( $this->tracked_cart_items[ $cart_item_key ] ) ) {
+					continue;
+				} else {
+					$this->tracked_cart_items[ $cart_item_key ] = true;
+				}
+
 				$quantity = isset( $values['quantity'] ) ? (int) $values['quantity'] : 0;
 
 				$product_id   = $values['product_id'];
@@ -126,6 +136,12 @@ class WC_Dynamic_Pricing_Counter {
 	}
 
 	public function on_add_to_cart( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
+		if ( isset( $this->tracked_cart_items[ $cart_item_key ] ) ) {
+			return;
+		} else {
+			$this->tracked_cart_items[ $cart_item_key ] = true;
+		}
+
 		//Store product counts
 		$this->product_counts[ $product_id ] = isset( $this->product_counts[ $product_id ] ) ?
 			$this->product_counts[ $product_id ] + $quantity : $quantity;
@@ -178,8 +194,14 @@ class WC_Dynamic_Pricing_Counter {
 	}
 
 	public function get_cart_item_from_session( $cart_item, $values, $cart_item_key ) {
-		if (empty($cart_item)){
-			return;
+		if ( empty( $cart_item ) ) {
+			return $cart_item;
+		}
+
+		if ( isset( $this->tracked_cart_items[ $cart_item_key ] ) ) {
+			return $cart_item;
+		} else {
+			$this->tracked_cart_items[ $cart_item_key ] = true;
 		}
 
 		$product = $cart_item['data'];

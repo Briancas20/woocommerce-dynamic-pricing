@@ -323,7 +323,7 @@ class WC_Dynamic_Pricing_Advanced_Product extends WC_Dynamic_Pricing_Advanced_Ba
 							break;
 						case 'variation':
 							$f = $rule['from'];
-							$a = $rule['adjust'];
+							$a = min( $rule['adjust'], max( 0, $q - $f ) );
 
 							if ( isset( $this->used_rules[ $rule_set_id ] ) ) {
 								$a = $a - $this->used_rules[ $rule_set_id ];
