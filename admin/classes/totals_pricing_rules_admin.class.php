@@ -292,7 +292,7 @@ class woocommerce_totals_pricing_rules_admin {
 				</td>
 				<td>
 					<select id="pricing_rule_type_value_<?php echo $name . '_' . $index; ?>" name="pricing_rules[<?php echo $name; ?>][rules][<?php echo $index; ?>][type]">
-						<option <?php selected( 'percentage_discount', $rule['type'] ); ?> value="percentage_discount"><?php _e('Percentage Discount', 'woocommerce-dynamic-pricing'); ?></option>
+						<option <?php selected( 'percentage_discount', $rule['type'] ); ?> value="percentage_discount"><?php _e('Percentage Adjustment', 'woocommerce-dynamic-pricing'); ?></option>
 					</select>
 				</td>
 				<td>
@@ -424,7 +424,7 @@ class woocommerce_totals_pricing_rules_admin {
 						html += '</td>';
 						html += '<td>';
 						html += '<select id="pricing_rule_type_value_' + name + '_' + $index + '" name="pricing_rules[' + name + '][rules][' + $index + '][type]">';
-						html += '<option value="percentage_discount"><?php _e('Percentage Discount', 'woocommerce-dynamic-pricing'); ?></option>';
+						html += '<option value="percentage_discount"><?php _e('Percentage Adjustment', 'woocommerce-dynamic-pricing'); ?></option>';
 						html += '</select>';
 						html += '</td>';
 						html += '<td>';

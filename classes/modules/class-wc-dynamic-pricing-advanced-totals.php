@@ -75,9 +75,9 @@ class WC_Dynamic_Pricing_Advanced_Totals extends WC_Dynamic_Pricing_Advanced_Bas
 								}
 
 								$discounted = isset( WC()->cart->cart_contents[ $cart_item_key ]['discounts'] );
-								if ($discounted){
+								if ( $discounted ) {
 									$d = WC()->cart->cart_contents[ $cart_item_key ]['discounts'];
-									if (in_array('advanced_totals', $d['by'])) {
+									if ( in_array( 'advanced_totals', $d['by'] ) ) {
 										continue;
 									}
 								}
@@ -88,8 +88,12 @@ class WC_Dynamic_Pricing_Advanced_Totals extends WC_Dynamic_Pricing_Advanced_Bas
 									$amount = apply_filters( 'woocommerce_dynamic_pricing_get_rule_amount', $rule['amount'], $rule, $cart_item, $this );
 									$amount = $amount / 100;
 
+									if ( $amount > 1 ) {
+										$price_adjusted = round(floatval( $original_price )  + ( ( floatval( $amount ) * $original_price) - floatval( $original_price)), (int) $num_decimals );
+									} else {
+										$price_adjusted = round( floatval( $original_price ) - ( floatval( $amount ) * $original_price ), (int) $num_decimals );
+									}
 
-									$price_adjusted = round( floatval( $original_price ) - ( floatval( $amount ) * $original_price ), (int) $num_decimals );
 									WC_Dynamic_Pricing::apply_cart_item_adjustment( $cart_item_key, $original_price, $price_adjusted, $this->module_id, $set_id );
 								}
 							}
@@ -103,21 +107,17 @@ class WC_Dynamic_Pricing_Advanced_Totals extends WC_Dynamic_Pricing_Advanced_Bas
 				}
 			}
 		}
-
-		add_filter('wc_dynamic_pricing_stack_order_totals', '__return_true');
-
 	}
 
 
-
 	private function is_applied_to_product( $product, $targets ) {
-		if ( is_admin() && !is_ajax() ) {
+		if ( is_admin() && ! is_ajax() ) {
 			return false;
 		}
 
 		$terms = $this->get_product_category_ids( $product );
 
-		$process_discounts =  count( array_intersect( $targets, $terms ) ) > 0;
+		$process_discounts = count( array_intersect( $targets, $terms ) ) > 0;
 
 		return apply_filters( 'woocommerce_dynamic_pricing_is_applied_to', $process_discounts, $product, $this->module_id, $this, $targets );
 	}

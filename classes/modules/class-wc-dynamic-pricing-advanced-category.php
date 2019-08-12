@@ -46,7 +46,6 @@ class WC_Dynamic_Pricing_Advanced_Category extends WC_Dynamic_Pricing_Advanced_B
 			//Process block discounts first
 			foreach ( $valid_sets as $set_id => $set ) {
 
-
 				if ( $set->mode != 'block' ) {
 					continue;
 				}
@@ -121,7 +120,7 @@ class WC_Dynamic_Pricing_Advanced_Category extends WC_Dynamic_Pricing_Advanced_B
 						if ( $rcq - $rule['from'] >= 0 ) {
 							$rcq -= $rule['from'];
 							$tt  += $rule['adjust'];
-							//If the total items that can be dicsounted is greater than the number of clean items to be discounted, reduce the 
+							//If the total items that can be discounted is greater than the number of clean items to be discounted, reduce the
 							//mixed quantity by the difference, because those items will be discounted and can not count towards making another discounted item. 
 							if ( $tt > $ct ) {
 								$rmq -= ( $tt - $ct );
@@ -339,10 +338,6 @@ class WC_Dynamic_Pricing_Advanced_Category extends WC_Dynamic_Pricing_Advanced_B
 
 				$line_total = ( $discount_quantity * $adjusted ) + ( $full_price_quantity * $price );
 				$result     = $line_total / $cart_item['quantity'];
-
-				if ( $cart_item['available_quantity'] != $cart_item['quantity'] ) {
-
-				}
 
 				$result = $result >= 0 ? $result : 0;
 				break;
