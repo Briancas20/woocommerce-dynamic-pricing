@@ -1,9 +1,22 @@
 *** Dynamic Pricing Changelog ***
+2019.07.23 - version 3.1.15
+    * Fix:  Fix issue when applying special offer discounts to specific variations based on variation quantity count.
+    * Update:  Added the ability to add a percentage greater than 100 in the order total module to add a percentage up-charge.
+    * Fix:  Fix issue in 3.1.14 where apache was throwing headers alreay sent errors due to a space before the opening <?php tag
+
+2019.07.22 - version 3.1.14
+    * Update:  Modify plugin url to allow for symlinks.
+    * Update:  Update Membership Plan selector to the enhanced WC select box.
+    * Update:  Allow percent increases for product prices for simple rules.
+    * Update:  Add woocommerce_dynamic_pricing_get_rule_amount to the simple groups module.
+    * Update:  Modify rules so that rules which are based on quantity of 1 will show in the store before adding to the cart.
+
 2019.01.07 - version 3.1.13
     * Fix:  Fix issue where rules were being loaded for roles other than the logged on users role.
 
 2019.01.03 - version 3.1.12
     * Fix:  Fix issue where discounted prices were being shown when in an invalid state.
+
 2019.01.02 - version 3.1.11
     * Update:  Fix date ranges so they are localized to the WordPress time.
     * Update:  Update date range calculation to be inclusive.  Sales start at 00:00:01 and end at 23:59:59 on the selected dates.
