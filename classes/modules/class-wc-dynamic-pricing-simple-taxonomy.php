@@ -244,7 +244,8 @@ class WC_Dynamic_Pricing_Simple_Taxonomy extends WC_Dynamic_Pricing_Simple_Base 
 								$rule['from'] = 0;
 							}
 
-							if ( $rule['from'] == '0' ) {
+							$show_pricing_in_shop = apply_filters( 'woocommerce_dynamic_pricing_show_adjustments_in_shop', ( $rule['from'] == '0' || $rule['from']  == '1'), $rule, $_product );
+							if ( $show_pricing_in_shop ) {
 								$temp = $this->get_adjusted_price( $rule, $working_price );
 
 								if ( ! $price_adjusted || $temp < $price_adjusted ) {

@@ -1,8 +1,35 @@
 *** Dynamic Pricing Changelog ***
+2020.08.21 - version 3.1.21
+    * Fix:  Remove hardcoded value for num_decimals.
+    * Update: Remove old compatibility file from the admin directory.
+
+2020.08.18 - version 3.1.20
+    * Update:  Allow variable products with a 0 based price to have their prices modified with a Fixed Price rule in the shop.
+    * Update:  Allow variable products with a 0 based price to have their prices modified with the groups module.
+    * Update:  Include modifications from WPML to allow translation of category rules.
+    * Update:  Fix issue with simple pricing rules on variable products.
+    * Update:  Fix an issue where prices reduced to 0 on variable products would not show the discount format after selecting a variation.
+    * Update:  Fix an issue with empty prices being returned as 0.00 from Dynamic Pricing rather than an empty string.
+
+2020.04.08 - version 3.1.19
+    * Update:  Only show adjustments in the shop for advanced category rules when the product is in both the categories to count as well as the categories to adjust.
+
+2020.03.30 - version 3.1.18
+        * Fix:  Correct issue with discounts being show in the shop when minimum quantity was not reached.
+
+2020.03.30 - version 3.1.17
+    * Fix:  Correct issue with discounts being show in the shop when minimum quantity was not reached.
+
+2020.03.27 - version 3.1.16
+    * New: New filter to disable applying pricing rules in the shop when the quantity is 0, or 1.  Basically the adjustment will only show up in the cart.
+        add_filter('woocommerce_dynamic_pricing_show_adjustments_in_shop', '__return_false');
+    * Update:  Allow 0 based fixed prices to set the price of the product in the shop.
+    * Update:  New filters to allow for custom taxonomy modules for processing.  Used specifically for variation attribute targeting.
+
 2019.07.23 - version 3.1.15
     * Fix:  Fix issue when applying special offer discounts to specific variations based on variation quantity count.
     * Update:  Added the ability to add a percentage greater than 100 in the order total module to add a percentage up-charge.
-    * Fix:  Fix issue in 3.1.14 where apache was throwing headers alreay sent errors due to a space before the opening <?php tag
+    * Fix:  Fix issue in 3.1.14 where apache was throwing headers already sent errors due to a space before the opening <?php tag
 
 2019.07.22 - version 3.1.14
     * Update:  Modify plugin url to allow for symlinks.
