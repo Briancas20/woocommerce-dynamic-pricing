@@ -61,6 +61,7 @@ abstract class WC_Dynamic_Pricing_Module_Base {
 	protected function is_cumulative( $cart_item, $cart_item_key, $default = false ) {
 		//Check to make sure the item has not already been discounted by this module.  This could happen if update_totals is called more than once in the cart. 
 		$cart = WC()->cart->get_cart();
+
 		if ( isset( $cart ) && is_array( $cart ) && isset( $cart[ $cart_item_key ]['discounts'] ) && in_array( $this->module_id, WC()->cart->cart_contents[ $cart_item_key ]['discounts']['by'] ) ) {
 			return apply_filters( 'woocommerce_dynamic_pricing_is_cumulative', $default, $this->module_id, $cart_item, $cart_item_key );
 		} else {

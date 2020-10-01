@@ -208,7 +208,7 @@ class WC_Dynamic_Pricing_Advanced_Taxonomy extends WC_Dynamic_Pricing_Advanced_B
 				//check if this set is valid for the current user;
 				$is_valid_for_user = $set->is_valid_for_user();
 
-				if ( !( $is_valid_for_user ) ) {
+				if ( ! ( $is_valid_for_user ) ) {
 					continue;
 				}
 
@@ -222,13 +222,13 @@ class WC_Dynamic_Pricing_Advanced_Taxonomy extends WC_Dynamic_Pricing_Advanced_B
 				foreach ( $temp_cart as $t_cart_item_key => $t_cart_item ) {
 
 					$process_discounts = apply_filters( 'woocommerce_dynamic_pricing_process_product_discounts', true, $t_cart_item['data'], 'advanced_' . $this->taxonomy, $this, $t_cart_item );
-					if ( !$process_discounts ) {
+					if ( ! $process_discounts ) {
 						continue;
 					}
-
-					$terms = wp_get_post_terms( $t_cart_item['product_id'], $this->taxonomy, array( 'fields' => 'ids' ) );
+					$check_id = $t_cart_item['product_id'];
+					$terms = wp_get_post_terms( $check_id, $this->taxonomy, array( 'fields' => 'ids' ) );
 					if ( count( array_intersect( $targets, $terms ) ) > 0 ) {
-						if ( !$this->is_cumulative( $t_cart_item, $t_cart_item_key ) ) {
+						if ( ! $this->is_cumulative( $t_cart_item, $t_cart_item_key ) ) {
 							if ( $this->is_item_discounted( $t_cart_item, $t_cart_item_key ) ) {
 								continue;
 							}
@@ -240,8 +240,8 @@ class WC_Dynamic_Pricing_Advanced_Taxonomy extends WC_Dynamic_Pricing_Advanced_B
 							$q = 0;
 							if ( isset( $collector['args'] ) && isset( $collector['args']['cats'] ) && is_array( $collector['args']['cats'] ) ) {
 								foreach ( $temp_cart as $lck => $l_cart_item ) {
-
-									if ( apply_filters( 'woocommerce_dynamic_pricing_is_object_in_terms', is_object_in_term( $l_cart_item['product_id'], $this->taxonomy, $collector['args']['cats'] ), $l_cart_item['product_id'], $collector['args']['cats'] ) ) {
+									$l_check_id = $l_cart_item['product_id'];
+									if ( apply_filters( 'woocommerce_dynamic_pricing_is_object_in_terms', is_object_in_term( $l_check_id, $this->taxonomy, $collector['args']['cats'] ), $l_check_id, $collector['args']['cats'] ) ) {
 										if ( apply_filters( 'woocommerce_dynamic_pricing_count_' . $this->taxonomy . '_for_cart_item', true, $l_cart_item, $lck ) ) {
 											$q += (int) $l_cart_item['quantity'];
 										}
@@ -331,7 +331,7 @@ class WC_Dynamic_Pricing_Advanced_Taxonomy extends WC_Dynamic_Pricing_Advanced_B
 	}
 
 	protected function get_bulk_adjusted_price( $cart_item, $price, $rule, $q ) {
-		$result       = false;
+		$result = false;
 
 		$amount       = apply_filters( 'woocommerce_dynamic_pricing_get_rule_amount', $rule['amount'], $rule, $cart_item, $this );
 		$num_decimals = apply_filters( 'woocommerce_dynamic_pricing_get_decimals', (int) get_option( 'woocommerce_price_num_decimals' ) );
@@ -366,7 +366,7 @@ class WC_Dynamic_Pricing_Advanced_Taxonomy extends WC_Dynamic_Pricing_Advanced_B
 
 					if ( isset( $cart_item['addons_price_before_calc'] ) ) {
 						$addons_total = $price - $cart_item['addons_price_before_calc'];
-						$amount += $addons_total;
+						$amount       += $addons_total;
 					}
 
 					$result = round( $amount, (int) $num_decimals );
