@@ -281,8 +281,8 @@ class WC_Dynamic_Pricing_Simple_Membership extends WC_Dynamic_Pricing_Simple_Bas
 								$rule['from'] = 0;
 							}
 
-							if ( $rule['from'] == '0' || $rule['from'] == '1' ) {
-
+							$show_pricing_in_shop = apply_filters( 'woocommerce_dynamic_pricing_show_adjustments_in_shop', ( $rule['from'] == '0' || $rule['from']  == '1'), $rule, $_product );
+							if ( $show_pricing_in_shop ) {
 
 								//first rule matched takes precedence for the item. 
 								if ( ! $applied_rule ) {
@@ -295,9 +295,9 @@ class WC_Dynamic_Pricing_Simple_Membership extends WC_Dynamic_Pricing_Simple_Bas
 
 								//calcualte the lowest price for display
 								$price = $this->get_adjusted_price_by_product_rule( $rule, $a_working_price, $_product, $additional_price );
-								if ( $price && ! $lowest_price ) {
+								if ( ($price === 0.0 || $price ) && !$lowest_price ) {
 									$lowest_price = $price;
-								} elseif ( $price && $price < $lowest_price ) {
+								} elseif ( ($price === 0.0 || $price ) && $price < $lowest_price ) {
 									$lowest_price = $price;
 								}
 							}
@@ -311,8 +311,8 @@ class WC_Dynamic_Pricing_Simple_Membership extends WC_Dynamic_Pricing_Simple_Bas
 		if ( $process_discounts ) {
 			if ( ! $this->is_cumulative( $fake_cart_item, false ) ) {
 
-				$product_class = get_class( $_product );
-				if ( $product_class == 'WC_Product' && $_product->is_type( 'variable' ) && $lowest_price ) {
+				//$product_class = get_class( $_product );
+				if ( ($_product->is_type( 'variable' ) || $_product->is_type( 'variation' )) && ($lowest_price || $lowest_price === 0.0) ) {
 					return $lowest_price;
 				} elseif ( $applied_rule ) {
 					return $this->get_adjusted_price_by_product_rule( $applied_rule, $a_working_price, $_product, $additional_price );
@@ -353,43 +353,32 @@ class WC_Dynamic_Pricing_Simple_Membership extends WC_Dynamic_Pricing_Simple_Bas
 		$amount       = apply_filters( 'woocommerce_dynamic_pricing_get_rule_amount', $rule['amount'], $rule, null, $this );
 		$num_decimals = apply_filters( 'woocommerce_dynamic_pricing_get_decimals', (int) get_option( 'woocommerce_price_num_decimals' ) );
 
-		$q = 0;
 
-		if ( $rule['from'] == '*' ) {
-			$rule['from'] = 0;
-		}
+		$this->discount_data['rule'] = $rule;
 
-		if ( $rule['to'] == '*' ) {
-			$rule['to'] = $q;
-		}
+		switch ( $rule['type'] ) {
+			case 'price_discount':
+				$adjusted = floatval( $price ) - floatval( $amount );
+				$result   = $adjusted >= 0 ? $adjusted : 0;
+				break;
+			case 'percentage_discount':
+				$amount = $amount / 100;
 
-		if ( $q >= $rule['from'] && $q <= $rule['to'] ) {
-			$this->discount_data['rule'] = $rule;
+				$result = round( floatval( $price ) - ( floatval( $amount ) * $price ), (int) $num_decimals );
+				break;
+			case 'fixed_price':
 
-			switch ( $rule['type'] ) {
-				case 'price_discount':
-					$adjusted = floatval( $price ) - floatval( $amount );
-					$result   = $adjusted >= 0 ? $adjusted : 0;
-					break;
-				case 'percentage_discount':
-					$amount = $amount / 100;
-
-					$result = round( floatval( $price ) - ( floatval( $amount ) * $price ), (int) $num_decimals );
-					break;
-				case 'fixed_price':
-
-					$tax_display_mode = get_option( 'woocommerce_tax_display_shop' );
-					if ( $additional_price ) {
-						$amount += floatval( $additional_price );
-					}
-					$fixed_price = round( $amount, (int) $num_decimals );
-					//$result      = $tax_display_mode == 'incl' ? wc_get_price_including_tax( $_product, array( 'price' => $fixed_price ) ) : wc_get_price_excluding_tax( $_product, array( 'price' => $fixed_price ) );
-					$result = $fixed_price;
-					break;
-				default:
-					$result = false;
-					break;
-			}
+				$tax_display_mode = get_option( 'woocommerce_tax_display_shop' );
+				if ( $additional_price ) {
+					$amount += floatval( $additional_price );
+				}
+				$fixed_price = round( $amount, (int) $num_decimals );
+				//$result      = $tax_display_mode == 'incl' ? wc_get_price_including_tax( $_product, array( 'price' => $fixed_price ) ) : wc_get_price_excluding_tax( $_product, array( 'price' => $fixed_price ) );
+				$result = $fixed_price;
+				break;
+			default:
+				$result = false;
+				break;
 		}
 
 		return $result;

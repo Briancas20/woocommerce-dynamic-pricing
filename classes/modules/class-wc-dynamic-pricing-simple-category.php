@@ -157,7 +157,11 @@ class WC_Dynamic_Pricing_Simple_Category extends WC_Dynamic_Pricing_Simple_Base 
 	private function get_adjusted_price( $cart_item, $rule, $price ) {
 		$result = false;
 
-		$amount       = apply_filters( 'woocommerce_dynamic_pricing_get_rule_amount', $rule['amount'], $rule, null, $this );
+		$amount = apply_filters( 'woocommerce_dynamic_pricing_get_rule_amount', trim( $rule['amount'] ), $rule, null, $this );
+		if ( $amount === null || $amount === "" || ! is_numeric( $amount ) ) {
+			return false;
+		}
+
 		$num_decimals = apply_filters( 'woocommerce_dynamic_pricing_get_decimals', (int) get_option( 'woocommerce_price_num_decimals' ) );
 
 		switch ( $rule['type'] ) {
@@ -257,22 +261,27 @@ class WC_Dynamic_Pricing_Simple_Category extends WC_Dynamic_Pricing_Simple_Base 
 				if ( ! isset( $pricing_rule_set['mode'] ) || ( isset( $pricing_rule_set['mode'] ) && $pricing_rule_set['mode'] != 'block' ) ) {
 					$process_discounts = apply_filters( 'woocommerce_dynamic_pricing_process_product_discounts', true, $_product, 'simple_category', $this, $fake_cart_item );
 					if ( $process_discounts ) {
+
+						//3.1.19 - make sure the item is in the collectors in addition to the targets.
+						$collectors = array_map( 'intval', $pricing_rule_set['collector']['args']['cats'] );
 						//Grab targets from advanced category discounts so we properly show 0 based discounts for targets, not for the collector category values. 
-						$cats_to_check = isset( $pricing_rule_set['targets'] ) ? array_map( 'intval', $pricing_rule_set['targets'] ) : $pricing_rule_set['collector']['args']['cats'][0];
-						if ( $this->is_applied_to_product( $_product, $cats_to_check ) ) {
+						$cats_to_check           = isset( $pricing_rule_set['targets'] ) ? array_map( 'intval', $pricing_rule_set['targets'] ) : array_map( 'intval', $pricing_rule_set['collector']['args']['cats'] );
+						$product_is_in_collector = count( array_intersect( $collectors, $cats_to_check ) ) > 0;
+						if ( $product_is_in_collector && $this->is_applied_to_product( $_product, $cats_to_check ) ) {
 							$rule = array_shift( $pricing_rule_set['rules'] );
 
 							if ( ! isset( $rule['from'] ) || empty( $rule['from'] ) ) {
 								$rule['from'] = 0;
 							}
 
-							if ( $rule['from'] == '0' || $rule['from'] == '1' ) {
+							$show_pricing_in_shop = apply_filters( 'woocommerce_dynamic_pricing_show_adjustments_in_shop', ( $rule['from'] == '0' || $rule['from'] == '1' ), $rule, $_product );
+							if ( $show_pricing_in_shop ) {
 								$temp = $this->get_adjusted_price( $fake_cart_item, $rule, $working_price );
 
 								if ( ! $price_adjusted || $temp < $price_adjusted ) {
 									$price_adjusted = $temp;
 
-									return $price_adjusted;//Only process first rule, @since 3.1.7
+									//return $price_adjusted;//Only process first rule, @since 3.1.7
 								}
 							}
 						}
